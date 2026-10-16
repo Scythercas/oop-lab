@@ -1,0 +1,13 @@
+# 依存ライブラリとビルド結果
+node_modules/
+dist/
+.astro/
+.wrangler/
+
+# 秘密情報（リポジトリは公開する）
+.env
+.env.*
+
+# OS・エディタが作るファイル
+.DS_Store
+Thumbs.db

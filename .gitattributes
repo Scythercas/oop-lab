@@ -1,0 +1,2 @@
+# 改行を LF にそろえる（詳細設計書 DES-03 §3.1）
+* text=auto eol=lf
