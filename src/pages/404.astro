@@ -1,0 +1,10 @@
+---
+// 存在しない URL のときに返すページ（詳細設計書 §5.1）
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="ページが見つかりません">
+  <h1>ページが見つかりません</h1>
+  <p>URL が間違っているか、ページが移動した可能性があります。</p>
+  <p><a href="/">概念一覧へ戻る</a></p>
+</BaseLayout>

@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "oop-lab",
+  "compatibility_date": "2026-10-01",
+  // 静的アセットだけを配信する（ADR-0001・ADR-0002）
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  // Pull Request ごとのプレビュー URL（詳細設計書 §9.2）
+  "preview_urls": true
+}

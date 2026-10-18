@@ -11,3 +11,8 @@ dist/
 # OS・エディタが作るファイル
 .DS_Store
 Thumbs.db
+
+# テストの結果
+playwright-report/
+test-results/
+coverage/
