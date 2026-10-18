@@ -1,0 +1,123 @@
+---
+// SC-04 このサイトについて（基本設計書 §3.12、詳細設計書 §10・§11）
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { listProductionLicenses } from '../build/licenses';
+import { NEW_ISSUE_URL, REPOSITORY_URL, SITE_NAME } from '../config';
+
+const licenses = listProductionLicenses();
+---
+
+<BaseLayout title="このサイトについて">
+  <h1>このサイトについて</h1>
+  <nav aria-label="このページの目次">
+    <ul>
+      <li><a href="#terms">利用規約</a></li>
+      <li><a href="#privacy">プライバシーポリシー</a></li>
+      <li><a href="#license">ライセンス</a></li>
+      <li><a href="#report">誤りの報告</a></li>
+    </ul>
+  </nav>
+
+  <section id="terms" aria-labelledby="terms-heading">
+    <h2 id="terms-heading">利用規約</h2>
+    <ol>
+      <li>
+        <strong>このサイトについて</strong>: 本サイト（{SITE_NAME}）は、オブジェクト指向の考え方を学ぶための無料の学習サイトです。
+      </li>
+      <li>
+        <strong>教材の題材</strong>: 教材の題材は、実際の自動車の仕組みを学習用に簡略化したモデルです。実在の車両や製品の仕様を表すものではありません。
+      </li>
+      <li>
+        <strong>免責</strong>: 教材のコードは学習用です。実際の車両や製品への搭載は想定しておらず、機能安全規格（ISO 26262 など）やコーディング規約（MISRA C++ など）への準拠も保証しません。内容の正確さには努めますが、誤りを含む場合があります。本サイトの利用によって生じた損害について、運営者は責任を負いません。
+      </li>
+      <li>
+        <strong>ライセンス</strong>: 教材の文章は CC BY 4.0、プログラムとサンプルコードは MIT ライセンスで提供します。
+      </li>
+      <li>
+        <strong>変更と停止</strong>: 運営者は、予告なく本サイトの内容を変更し、または公開を停止することがあります。
+      </li>
+    </ol>
+  </section>
+
+  <section id="privacy" aria-labelledby="privacy-heading">
+    <h2 id="privacy-heading">プライバシーポリシー</h2>
+    <ol>
+      <li>
+        <strong>集める情報</strong>: 本サイトは、氏名やメールアドレスなどの個人情報を集めません。アクセス解析や、Cookie による追跡も行いません。
+      </li>
+      <li>
+        <strong>学習の記録</strong>: 学習の記録（クイズの結果、課題の下書きなど）は、お使いのブラウザの中（localStorage）にだけ保存され、運営者を含む外部には送られません。ブラウザのデータを消すと、記録も消えます。
+      </li>
+      <li>
+        <strong>配信サービスの記録</strong>: 本サイトは Cloudflare を通じて配信しています。Cloudflare は、安全な配信のために、アクセス元の IP アドレスなどを記録することがあります（Cloudflare のプライバシーポリシーに従います）。
+      </li>
+      <li>
+        <strong>誤りの報告</strong>: 誤りの報告は GitHub Issues で受け付けます。投稿した内容と GitHub のアカウント名は公開されます。
+      </li>
+      <li><strong>変更</strong>: このポリシーを変えるときは、このページでお知らせします。</li>
+    </ol>
+  </section>
+
+  <section id="license" aria-labelledby="license-heading">
+    <h2 id="license-heading">ライセンス</h2>
+    <h3>本サイトの教材とプログラム</h3>
+    <ul>
+      <li>教材の文章（解説・設問・解説文）: クリエイティブ・コモンズ 表示 4.0 国際（CC BY 4.0）</li>
+      <li>プログラムと、教材のサンプルコード: MIT ライセンス</li>
+    </ul>
+    <p>ソースコードと教材は <a href={REPOSITORY_URL}>GitHub のリポジトリ</a> で公開しています。</p>
+
+    <h3>使っているオープンソースソフトウェア</h3>
+    <p>本サイトは、次のオープンソースソフトウェアを使っています（{licenses.length} 件）。</p>
+    <details>
+      <summary>一覧を開く</summary>
+      <table class="license-table">
+        <thead>
+          <tr>
+            <th scope="col">名前</th>
+            <th scope="col">版</th>
+            <th scope="col">ライセンス</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            licenses.map((item) => (
+              <tr>
+                <td>{item.name}</td>
+                <td>{item.version}</td>
+                <td>{item.license}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </details>
+  </section>
+
+  <section id="report" aria-labelledby="report-heading">
+    <h2 id="report-heading">誤りの報告</h2>
+    <p>
+      教材の誤りに気づいたら、<a href={NEW_ISSUE_URL} rel="noopener noreferrer" target="_blank">GitHub Issues</a>
+      で知らせてください。投稿した内容と GitHub のアカウント名は公開されます。
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  section {
+    margin-top: var(--space-5);
+  }
+
+  .license-table {
+    border-collapse: collapse;
+    margin-top: var(--space-3);
+    font-size: 0.9rem;
+  }
+
+  .license-table th,
+  .license-table td {
+    border: 1px solid var(--color-border);
+    padding: var(--space-1) var(--space-2);
+    text-align: left;
+  }
+</style>

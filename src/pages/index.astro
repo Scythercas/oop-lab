@@ -1,0 +1,31 @@
+---
+// SC-01 トップ（概念一覧）。概念の一覧と学習状況は WP2-6 で作る（基本設計書 §3.4）
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_NAME } from '../config';
+---
+
+<BaseLayout>
+  <h1>{SITE_NAME}</h1>
+  <p class="lead">車載の題材で、設計の違いを「変更のしやすさ」で体感する</p>
+  <section aria-labelledby="how-to">
+    <h2 id="how-to">使い方</h2>
+    <ol class="steps">
+      <li>概念を選ぶ</li>
+      <li>設計を比べる</li>
+      <li>仕様変更を当てて、修正量を比べる</li>
+      <li>クイズと課題で確認する</li>
+    </ol>
+  </section>
+  <p>教材を準備しています。</p>
+</BaseLayout>
+
+<style>
+  .lead {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+  }
+
+  .steps {
+    padding-left: 1.5rem;
+  }
+</style>
