@@ -1,0 +1,64 @@
+# M0 の技術確認（T5・T6）用。試作のブランチでだけ動かし、main にはマージしない。
+name: spike-t5-t6
+
+on:
+  push:
+    branches: [chore/spike-tech-checks]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  t5-cpp:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: spikes/t5-t6-ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: GCC の版
+        run: g++ --version | head -1
+      - name: iostream の出力が検出されないこと（期待: 成功し、期待結果と一致）
+        run: |
+          FLAGS="-std=c++17 -Wall -Wextra -Werror -pedantic -fno-exceptions -fno-rtti"
+          g++ $FLAGS -o iostream_ok iostream_ok.cpp alloc_guard.cpp
+          ./iostream_ok > out.txt
+          diff -u expected-output.txt out.txt
+          echo "OK: 出力が一致し、動的メモリ確保は検出されなかった"
+      - name: 実行中の確保を検出すること（期待: 異常終了）
+        run: |
+          FLAGS="-std=c++17 -Wall -Wextra -Werror -pedantic -fno-exceptions -fno-rtti"
+          g++ $FLAGS -o alloc_in_main alloc_in_main.cpp alloc_guard.cpp
+          if ./alloc_in_main; then echo "NG: 検出されなかった"; exit 1; else echo "OK: 終了コード $? で検出"; fi
+      - name: 静的な初期化の中の確保を検出すること（期待: 異常終了）
+        run: |
+          FLAGS="-std=c++17 -Wall -Wextra -Werror -pedantic -fno-exceptions -fno-rtti"
+          g++ $FLAGS -o alloc_in_static_init alloc_in_static_init.cpp alloc_guard.cpp
+          if ./alloc_in_static_init; then echo "NG: 検出されなかった"; exit 1; else echo "OK: 終了コード $? で検出"; fi
+
+  t6-java:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: spikes/t5-t6-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Java の版と既定の文字コード
+        run: |
+          java -version 2>&1 | head -1
+          echo "LANG=$LANG"
+      - name: -Dstdout.encoding=UTF-8 で日本語が期待結果と一致すること
+        run: |
+          javac -encoding UTF-8 -d out java/Main.java
+          java -Dstdout.encoding=UTF-8 -cp out Main > out-java.txt
+          diff -u expected-output.txt out-java.txt
+          echo "OK: 出力が一致"
+      - name: 参考（LANG=C のときに指定なしで実行した場合）
+        run: |
+          LANG=C LC_ALL=C java -cp out Main > out-java-c.txt || true
+          diff -u expected-output.txt out-java-c.txt && echo "指定なしでも一致" || echo "指定なしでは一致しない（-Dstdout.encoding の指定が必要）"

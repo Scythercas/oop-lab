@@ -1,0 +1,16 @@
+---
+import Counter from '../components/Counter.jsx';
+---
+<html lang="ja" data-lang="java">
+  <head>
+    <meta charset="utf-8" />
+    <script is:inline>
+      try { var d = JSON.parse(localStorage.getItem('oop-lab.learning-data') || 'null'); if (d && d.settings && d.settings.displayLanguage) document.documentElement.dataset.lang = d.settings.displayLanguage; } catch (e) {}
+    </script>
+    <title>spike</title>
+  </head>
+  <body>
+    <Counter client:load />
+    <Counter client:visible />
+  </body>
+</html>

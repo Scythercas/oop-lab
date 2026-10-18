@@ -1,0 +1,67 @@
+[
+    {
+        "Case":  "ok",
+        "Mode":  "compile-then-run",
+        "CompileEnabledBefore":  true,
+        "CompileCall":  {
+                            "Ok":  true,
+                            "Value":  {
+
+                                      },
+                            "Killed":  false,
+                            "Ms":  166
+                        },
+        "CompileEnabledAfter":  false,
+        "RunCall":  {
+                        "Ok":  true,
+                        "Value":  "左前 230kPa\n合計 3\n",
+                        "Killed":  false,
+                        "Ms":  167
+                    },
+        "OutputMatches":  true,
+        "Killed":  false
+    },
+    {
+        "Case":  "runtime-error",
+        "Mode":  "compile-then-run",
+        "CompileEnabledBefore":  true,
+        "CompileCall":  {
+                            "Ok":  true,
+                            "Value":  {
+
+                                      },
+                            "Killed":  false,
+                            "Ms":  170
+                        },
+        "CompileEnabledAfter":  false,
+        "RunCall":  {
+                        "Ok":  true,
+                        "Value":  "開始\nERROR: 11 0 で除算しました。\n",
+                        "Killed":  false,
+                        "Ms":  164
+                    },
+        "Killed":  false
+    },
+    {
+        "Case":  "compile-error",
+        "Mode":  "compile",
+        "CompileEnabledBefore":  true,
+        "CompileCall":  {
+                            "Ok":  true,
+                            "Value":  {
+
+                                      },
+                            "Killed":  false,
+                            "Ms":  183
+                        },
+        "CompileEnabledAfter":  true,
+        "Killed":  false
+    },
+    {
+        "Case":  "compile-error",
+        "Mode":  "run",
+        "Killed":  true,
+        "CaseError":  "RPC サーバーを利用できません。 (HRESULT からの例外:0x800706BA)",
+        "ExcelAlive":  false
+    }
+]
