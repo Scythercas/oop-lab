@@ -19,19 +19,19 @@ jobs:
       - uses: actions/checkout@v4
       - name: GCC の版
         run: g++ --version | head -1
-      - name: iostream の出力が検出されないこと（期待: 成功し、期待結果と一致）
+      - name: "iostream の出力が検出されないこと（期待: 成功し、期待結果と一致）"
         run: |
           FLAGS="-std=c++17 -Wall -Wextra -Werror -pedantic -fno-exceptions -fno-rtti"
           g++ $FLAGS -o iostream_ok iostream_ok.cpp alloc_guard.cpp
           ./iostream_ok > out.txt
           diff -u expected-output.txt out.txt
           echo "OK: 出力が一致し、動的メモリ確保は検出されなかった"
-      - name: 実行中の確保を検出すること（期待: 異常終了）
+      - name: "実行中の確保を検出すること（期待: 異常終了）"
         run: |
           FLAGS="-std=c++17 -Wall -Wextra -Werror -pedantic -fno-exceptions -fno-rtti"
           g++ $FLAGS -o alloc_in_main alloc_in_main.cpp alloc_guard.cpp
           if ./alloc_in_main; then echo "NG: 検出されなかった"; exit 1; else echo "OK: 終了コード $? で検出"; fi
-      - name: 静的な初期化の中の確保を検出すること（期待: 異常終了）
+      - name: "静的な初期化の中の確保を検出すること（期待: 異常終了）"
         run: |
           FLAGS="-std=c++17 -Wall -Wextra -Werror -pedantic -fno-exceptions -fno-rtti"
           g++ $FLAGS -o alloc_in_static_init alloc_in_static_init.cpp alloc_guard.cpp
