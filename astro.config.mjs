@@ -1,6 +1,8 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import { checkExpectations } from './src/build/expectations.ts';
+import { scriptHash } from './src/build/head-script.ts';
+import { headScript } from './src/build/site.ts';
 import { formatDiagnostic } from './src/content/diagnostics.ts';
 import { CONTENT_ROOT } from './src/content/root.ts';
 import { checkContent } from './src/content/validate.ts';
@@ -29,7 +31,7 @@ function contentCheck() {
 
 // CSP は、ページごとの meta 要素で出す（詳細設計書 §9.3）。
 // ヘッダ（public/_headers）には、meta 要素では指定できない frame-ancestors だけを書く。
-// 表示言語を決める先頭スクリプトのハッシュ値は、WP2-5 で scriptDirective.hashes に加える。
+// 表示言語を決める先頭スクリプトは is:inline のため Astro がハッシュ値を入れない。同じ関数で作ったものから計算して渡す（§5.4）。
 export default defineConfig({
   integrations: [react(), contentCheck()],
   trailingSlash: 'always',
@@ -50,6 +52,7 @@ export default defineConfig({
         "base-uri 'self'",
         "form-action 'none'",
       ],
+      scriptDirective: { hashes: [scriptHash(headScript())] },
       // コードの色付けなどが style 属性を使うため（詳細設計書 §9.3）
       styleDirective: { resources: ["'self'", "'unsafe-inline'"] },
     },

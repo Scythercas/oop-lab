@@ -4,6 +4,7 @@ import '@fontsource-variable/noto-sans-jp';
 import '@fontsource/biz-udgothic/400.css';
 import '@fontsource/biz-udgothic/700.css';
 import '../styles/global.css';
+import { headScript, languageCss } from '../build/site';
 import { IS_PRERELEASE, NEW_ISSUE_URL, SITE_NAME } from '../config';
 
 interface Props {
@@ -22,6 +23,9 @@ const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
 <html lang="ja" data-lang="java">
   <head>
     <meta charset="utf-8" />
+    <!-- 描画の前に表示言語を決める（詳細設計書 §5.4）。CSP のハッシュ値は astro.config で同じものから作る -->
+    <script is:inline set:html={headScript()} />
+    <style is:inline set:html={languageCss()} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <title>{pageTitle}</title>
