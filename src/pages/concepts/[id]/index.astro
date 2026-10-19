@@ -1,0 +1,57 @@
+---
+// SC-02a 解説（基本設計書 §3.6、要件定義書 FR-020〜022・FR-070）
+import ConceptLayout from '../../../layouts/ConceptLayout.astro';
+import ReadMarker from '../../../components/ReadMarker';
+import SpecDetails from '../../../components/SpecDetails.astro';
+import { buildExplanationPageData } from '../../../build/page-data';
+import { conceptPaths, siteContent } from '../../../build/site';
+
+export const getStaticPaths = () => conceptPaths();
+
+const { concept } = Astro.props;
+const content = siteContent();
+const data = buildExplanationPageData(concept, content);
+const notedLanguages = content.languages.filter((language) => data.notes[language.id] !== undefined);
+---
+
+<ConceptLayout concept={concept} tab="explanation">
+  <SpecDetails concept={concept} />
+  <article class="prose explanation" set:html={data.explanationHtml} />
+  {
+    data.related.length > 0 && (
+      <nav class="related" aria-labelledby="related-heading">
+        <h2 id="related-heading">関連する概念のページ</h2>
+        <ul>
+          {data.related.map((item) => (
+            <li>
+              <a href={`/concepts/${item.id}/`}>{item.title}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+  {
+    notedLanguages.length > 0 && (
+      <div data-follow-lang>
+        {notedLanguages.map((language) => {
+          const note = data.notes[language.id];
+          return (
+            <section class="language-note" data-lang-block={language.id} aria-labelledby={`note-${language.id}`}>
+              <h2 id={`note-${language.id}`}>{language.label} での補足</h2>
+              {note.unsupported !== undefined && (
+                <p class="unsupported-note" role="note">
+                  {note.unsupported}
+                </p>
+              )}
+              <div class="prose" set:html={note.bodyHtml} />
+            </section>
+          );
+        })}
+      </div>
+    )
+  }
+  <div class="js-only">
+    <ReadMarker client:load conceptId={concept.id} />
+  </div>
+</ConceptLayout>

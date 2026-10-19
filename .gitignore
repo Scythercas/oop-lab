@@ -16,3 +16,5 @@ Thumbs.db
 playwright-report/
 test-results/
 coverage/
+.vba-verify-test-*/
+.e2e-content/

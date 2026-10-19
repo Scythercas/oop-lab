@@ -2,45 +2,11 @@
 // 画面の差分表示と修正量の数値は、この計算結果だけから作る（要件定義書 NFR-12）。
 import { diffLines } from 'diff';
 import { type SourceFile, compareOrdinal } from '../content/loader.ts';
+import type { ChangeCounts, DiffMetrics, DiffRow, FileDiff, FileStatus, StateDiff } from '../domain/diff-view.ts';
 
-export type FileStatus = 'added' | 'deleted' | 'modified' | 'unchanged';
-
-/** 差分の1行。行番号は 0 から数える */
-export type DiffRow =
-  | { type: 'context'; oldLine: number; newLine: number }
-  | { type: 'removed'; oldLine: number }
-  | { type: 'added'; newLine: number };
-
-export interface ChangeCounts {
-  /** 変更箇所数: 変わった行が連続しているかたまりの数 */
-  hunks: number;
-  addedLines: number;
-  removedLines: number;
-}
-
-export interface FileDiff extends ChangeCounts {
-  path: string;
-  status: FileStatus;
-  rows: DiffRow[];
-}
-
-export interface DiffMetrics extends ChangeCounts {
-  /** 追加・削除・変更されたファイルの数 */
-  changedFiles: number;
-  /** 修正行数 = 追加行数 + 削除行数。比較と期待の照合（B01）に使う */
-  changedLines: number;
-}
-
-export interface StateDiff {
-  files: FileDiff[];
-  metrics: DiffMetrics;
-}
-
-/** 左右に並べて表示するときの1行（§4.6）。行の番号がない側は空の行 */
-export interface SideBySideRow {
-  left?: { line: number; changed: boolean };
-  right?: { line: number; changed: boolean };
-}
+// 型と表示用の計算は、ブラウザと共用するため src/domain/diff-view.ts に置く
+export type { ChangeCounts, DiffMetrics, DiffRow, FileDiff, FileStatus, SideBySideRow, StateDiff } from '../domain/diff-view.ts';
+export { pickInitialFile, toSideBySide } from '../domain/diff-view.ts';
 
 export function splitLines(content: string): string[] {
   if (content === '') return [];
@@ -111,41 +77,4 @@ export function diffStates(before: SourceFile[], after: SourceFile[]): StateDiff
     { changedFiles: 0, hunks: 0, addedLines: 0, removedLines: 0, changedLines: 0 },
   );
   return { files, metrics };
-}
-
-/** 変わらない行を左右の同じ高さに置き、変わったかたまりは削除を左・追加を右に上から並べる（§4.6） */
-export function toSideBySide(rows: DiffRow[]): SideBySideRow[] {
-  const result: SideBySideRow[] = [];
-  let removed: number[] = [];
-  let added: number[] = [];
-  const flush = () => {
-    for (let i = 0; i < Math.max(removed.length, added.length); i += 1) {
-      const row: SideBySideRow = {};
-      if (i < removed.length) row.left = { line: removed[i], changed: true };
-      if (i < added.length) row.right = { line: added[i], changed: true };
-      result.push(row);
-    }
-    removed = [];
-    added = [];
-  };
-  for (const row of rows) {
-    if (row.type === 'removed') removed.push(row.oldLine);
-    else if (row.type === 'added') added.push(row.newLine);
-    else {
-      flush();
-      result.push({ left: { line: row.oldLine, changed: false }, right: { line: row.newLine, changed: false } });
-    }
-  }
-  flush();
-  return result;
-}
-
-/** 最初に表示するファイル: 変更行数が最も多いもの。同じなら相対パスの文字コード順で先のもの（§5.3） */
-export function pickInitialFile(diff: StateDiff): string | undefined {
-  let best: FileDiff | undefined;
-  for (const file of diff.files) {
-    const lines = file.addedLines + file.removedLines;
-    if (best === undefined || lines > best.addedLines + best.removedLines) best = file;
-  }
-  return best?.path;
 }

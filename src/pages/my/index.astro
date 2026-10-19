@@ -1,0 +1,49 @@
+---
+// SC-03 学習データ（基本設計書 §3.11、要件定義書 FR-070〜073）
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DataManager from '../../components/DataManager';
+import NoScriptNotice from '../../components/NoScriptNotice.astro';
+import ProgressBadges from '../../components/ProgressBadges';
+import { conceptNumber, conceptOutline, siteContent } from '../../build/site';
+
+const concepts = siteContent().concepts;
+---
+
+<BaseLayout title="学習データ">
+  <h1>学習の記録</h1>
+  <section aria-labelledby="progress-heading">
+    <h2 id="progress-heading">概念ごとの状況</h2>
+    {
+      concepts.length === 0 ? (
+        <p>教材を準備しています。</p>
+      ) : (
+        <ol class="concept-list concept-list--compact">
+          {concepts.map((concept) => (
+            <li class="concept-card">
+              <div class="concept-card__head">
+                <span class="concept-card__number">{conceptNumber(concept)}</span>
+                <a class="concept-card__title" href={`/concepts/${concept.id}/`}>
+                  {concept.title}
+                </a>
+              </div>
+              <ProgressBadges client:load outline={conceptOutline(concept)} />
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </section>
+  <section aria-labelledby="storage-heading">
+    <h2 id="storage-heading">記録の保存場所について</h2>
+    <ul>
+      <li>このブラウザ内にだけ保存されます。別のブラウザや端末には引き継がれません。</li>
+      <li>ブラウザのデータを消すと、記録も消えます。</li>
+      <li>記録は、このサイトの外には送られません。</li>
+    </ul>
+  </section>
+  <section aria-labelledby="manage-heading">
+    <h2 id="manage-heading">記録の書き出し・読み込み・消去</h2>
+    <NoScriptNotice />
+    <DataManager client:load />
+  </section>
+</BaseLayout>

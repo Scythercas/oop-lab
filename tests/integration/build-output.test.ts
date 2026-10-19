@@ -1,4 +1,4 @@
-// 生成した各ページの CSP に、ページ内のすべてのスクリプトのハッシュ値が含まれる（テスト計画書 IT-03）
+// テスト用教材でビルドした結果の検査（テスト計画書 IT-02・IT-03）
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
@@ -8,6 +8,7 @@ import { afterAll, beforeAll, expect, it } from 'vitest';
 import { writeFixtureContent } from '../fixtures/content-fixture';
 
 let work: string;
+let outDir: string;
 let pages: { path: string; html: string }[];
 
 function listHtml(dir: string): string[] {
@@ -21,7 +22,7 @@ function listHtml(dir: string): string[] {
 beforeAll(() => {
   work = mkdtempSync(join(tmpdir(), 'build-csp-'));
   writeFixtureContent(join(work, 'content'));
-  const outDir = join(work, 'dist');
+  outDir = join(work, 'dist');
   const result = spawnSync(process.execPath, ['node_modules/astro/bin/astro.mjs', 'build', '--outDir', outDir], {
     encoding: 'utf8',
     env: { ...process.env, OOP_LAB_CONTENT_ROOT: join(work, 'content') },
@@ -54,4 +55,15 @@ it('配信ヘッダの CSP は frame-ancestors だけを指定する', () => {
   const headers = readFileSync('public/_headers', 'utf8');
   const policies = [...headers.matchAll(/Content-Security-Policy:\s*(.*)/g)].map((match) => match[1].trim());
   expect(policies).toEqual(["frame-ancestors 'none'"]);
+});
+
+it('IT-02: クイズの画面に正解データを含めず、正解データは別のファイルとして出力する', () => {
+  const quiz = pages.find((page) => page.path.endsWith(join('concepts', 'sample', 'quiz', 'index.html')));
+  expect(quiz).toBeDefined();
+  expect(quiz!.html).toContain('設問 1');
+  expect(quiz!.html).not.toContain('正解の理由');
+  expect(quiz!.html).not.toContain('誤りの理由');
+  const answers = JSON.parse(readFileSync(join(outDir, 'data', 'answers', 'sample.json'), 'utf8')) as Record<string, { correct: string }>;
+  expect(answers['sample.q01'].correct).toBe('a');
+  expect(Object.keys(answers)).toHaveLength(10);
 });
