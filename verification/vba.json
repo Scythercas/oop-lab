@@ -1,7 +1,90 @@
 {
   "tool": "vba-verify",
   "toolVersion": 1,
-  "excelVersion": "",
-  "verifiedAt": "",
-  "entries": []
+  "excelVersion": "16.0.19127",
+  "verifiedAt": "2026-10-19T16:57:17.790Z",
+  "entries": [
+    {
+      "target": "content/concepts/encapsulation/changes/park-lock/overapplied/vba",
+      "kind": "run",
+      "hash": "sha256:6b92b57c0d2e86893b0c76b014c4aaab59ab89e688e9ae4ca5fd100944dfbd84",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/changes/park-lock/expected-output.txt"
+    },
+    {
+      "target": "content/concepts/encapsulation/changes/park-lock/proper/vba",
+      "kind": "run",
+      "hash": "sha256:6df00d47fef7ec3e32037b0d12542bf512830455dc00726e3c9e1611261575ca",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/changes/park-lock/expected-output.txt"
+    },
+    {
+      "target": "content/concepts/encapsulation/changes/park-lock/unapplied/vba",
+      "kind": "run",
+      "hash": "sha256:c474a86ce34e246823c656ba1348775b2dfa43732a96dbce70252b26c0ead3ec",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/changes/park-lock/expected-output.txt"
+    },
+    {
+      "target": "content/concepts/encapsulation/changes/test-override/overapplied/vba",
+      "kind": "run",
+      "hash": "sha256:ea0c15e05f82d02a7610a853d46eb8f6aacee48474dde808f3c46814245da26a",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/changes/test-override/expected-output.txt"
+    },
+    {
+      "target": "content/concepts/encapsulation/changes/test-override/proper/vba",
+      "kind": "run",
+      "hash": "sha256:023d6bd996747e9f4aa562b4da1b8788eb3a4ac2175208425b54ad73aeae7644",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/changes/test-override/expected-output.txt"
+    },
+    {
+      "target": "content/concepts/encapsulation/changes/test-override/unapplied/vba",
+      "kind": "run",
+      "hash": "sha256:748074bb31acd1a1deda82a993099bc4a1bc9d586c0ea00fb4b37b5934982b24",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/changes/test-override/expected-output.txt"
+    },
+    {
+      "target": "content/concepts/encapsulation/exercises/ex01/answer/vba",
+      "kind": "run",
+      "hash": "sha256:a5bda7c82dc50ec5b42a6e78c825ad54b9a9c4c7454ce9e4720f1b262c57e30d",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/exercises/ex01/expected-output.txt"
+    },
+    {
+      "target": "content/concepts/encapsulation/quiz/questions.yaml#encapsulation.q09",
+      "kind": "compile",
+      "hash": "sha256:758c886651385a7e255ab4f34a343b00467c76461673e4dc4752bfb72c19ff9c",
+      "result": "passed"
+    },
+    {
+      "target": "content/concepts/encapsulation/quiz/questions.yaml#encapsulation.q10",
+      "kind": "compile",
+      "hash": "sha256:39fccd4542bf910b88bfa07047ec2ec1457c6c35d18d69c50affb0b609c22ceb",
+      "result": "passed"
+    },
+    {
+      "target": "content/concepts/encapsulation/variations/overapplied/vba",
+      "kind": "run",
+      "hash": "sha256:1ab01ea18c2340baf06332020749770c73cdc9c802e598ab3f50e1856a6f448e",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/expected-output.txt"
+    },
+    {
+      "target": "content/concepts/encapsulation/variations/proper/vba",
+      "kind": "run",
+      "hash": "sha256:956240a8ee00833714b156abf727a29482c45c8ff7c94751e8f86a93c7596a7a",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/expected-output.txt"
+    },
+    {
+      "target": "content/concepts/encapsulation/variations/unapplied/vba",
+      "kind": "run",
+      "hash": "sha256:ce2f797a8c23de207b697acdc82f1480d62a0669b121eeb4e5dbd2503635d885",
+      "result": "passed",
+      "expected": "content/concepts/encapsulation/expected-output.txt"
+    }
+  ]
 }

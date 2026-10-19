@@ -1,0 +1,5 @@
+P→N 0km/h ブレーキOFF 受付 現在N
+N→D 0km/h ブレーキOFF 拒否 現在N
+N→D 0km/h ブレーキON 受付 現在D
+D→R 20km/h ブレーキON 拒否 現在D
+D→P 0km/h ブレーキON 受付 現在P

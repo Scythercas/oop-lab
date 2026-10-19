@@ -1,0 +1,7 @@
+P→D 0km/h 受付 現在D
+D→R 20km/h 拒否 現在D
+D→N 15km/h 受付 現在N
+N→P 15km/h 受付 現在P
+P→D 0km/h 受付 現在D
+D→P 5km/h 受付 現在P
+P→R 30km/h 試験設定 現在R
