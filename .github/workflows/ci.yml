@@ -42,6 +42,48 @@ jobs:
       - name: ビルド
         run: npm run build
 
+  check-java:
+    name: Java の実行確認
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: 依存ライブラリを入れる
+        run: npm ci
+      - name: 確認処理そのもののテスト（UT-CHK）
+        run: npm run test:tools
+        env:
+          CHECK_LANG: java
+      - name: 教材の Java のコードの実行確認（CT-02・CT-04）
+        run: node tools/ci/run-code-checks.ts --lang java
+
+  check-cpp:
+    name: C++ の実行確認
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: 依存ライブラリを入れる
+        run: npm ci
+      - name: コンパイラの版を記録する
+        run: g++ --version
+      - name: 確認処理そのもののテスト（UT-CHK）
+        run: npm run test:tools
+        env:
+          CHECK_LANG: cpp
+      - name: 教材の C++ のコードの実行確認（CT-03・CT-04）
+        run: node tools/ci/run-code-checks.ts --lang cpp
+
   e2e:
     name: E2E テスト（Chromium・Firefox・WebKit）
     needs: check-content
@@ -72,7 +114,7 @@ jobs:
 
   deploy:
     name: デプロイ
-    needs: [check-content, e2e]
+    needs: [check-content, check-java, check-cpp, e2e]
     # 外部（フォーク）からの Pull Request ではシークレットを渡さないため、デプロイしない
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
