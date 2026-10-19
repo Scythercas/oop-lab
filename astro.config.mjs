@@ -1,15 +1,20 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
+import { checkExpectations } from './src/build/expectations.ts';
 import { formatDiagnostic } from './src/content/diagnostics.ts';
+import { CONTENT_ROOT } from './src/content/root.ts';
 import { checkContent } from './src/content/validate.ts';
 
-/** ビルドの最初に教材を検証し、エラーがあればビルドを止める（詳細設計書 §3.5） */
+/** ビルドの最初に教材を検証し（V01〜V11 と B01）、エラーがあればビルドを止める（詳細設計書 §3.5・§4.4） */
 function contentCheck() {
   return {
     name: 'oop-lab:content-check',
     hooks: {
       'astro:build:start': ({ logger }) => {
-        const { diagnostics } = checkContent('content');
+        const result = checkContent(CONTENT_ROOT);
+        const contentErrors = result.diagnostics.filter((diagnostic) => diagnostic.level === 'error').length;
+        // 教材の形に問題があると差分を正しく計算できないため、B01 は V01〜V11 が通ったときだけ行う
+        const diagnostics = contentErrors === 0 ? [...result.diagnostics, ...checkExpectations(result.content)] : result.diagnostics;
         for (const diagnostic of diagnostics) {
           if (diagnostic.level === 'error') logger.error(formatDiagnostic(diagnostic));
           else logger.warn(formatDiagnostic(diagnostic));
