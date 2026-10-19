@@ -35,6 +35,8 @@ jobs:
         run: npm run check
       - name: 静的検査（SA-02・SA-03）
         run: npm run lint
+      - name: 教材の検証（V01〜V11）
+        run: npm run content:check
       - name: 単体テスト・結合テスト
         run: npm test
       - name: ビルド

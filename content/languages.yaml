@@ -1,0 +1,54 @@
+# 表示言語の一覧（詳細設計書 §3.2）
+# 言語を足すときは、ここに1つ足し、各フォルダにその言語のソースを置く（要件定義書 NFR-09）。
+
+- id: java
+  label: Java
+  order: 1
+  highlight: java
+  editor: java
+  lineComment: '//'
+  entryFile: Main.java
+  extensions: ['.java']
+  classCount:
+    pattern: '^\s*(public\s+|abstract\s+|final\s+)*(class|interface|enum)\s+\w+'
+  check: ci
+  commands:
+    build: javac -encoding UTF-8 -d {out} {sources}
+    run: java -Dstdout.encoding=UTF-8 -cp {out} Main
+    syntaxCheck: javac -encoding UTF-8 -d {out} {sources}
+
+- id: cpp
+  label: C++
+  order: 2
+  highlight: cpp
+  editor: cpp
+  lineComment: '//'
+  entryFile: main.cpp
+  extensions: ['.h', '.cpp']
+  compileExtensions: ['.cpp']
+  classCount:
+    pattern: '^\s*(class|struct)\s+\w+[^;]*$'
+  check: ci
+  commands:
+    build: g++ -std=c++17 -Wall -Wextra -Werror -pedantic -fno-exceptions -fno-rtti -o {out}/main {sources} tools/ci/alloc_guard.cpp
+    run: '{out}/main'
+    syntaxCheck: g++ -std=c++17 -Wall -Wextra -Werror -pedantic -fno-exceptions -fno-rtti -fsyntax-only {files}
+  # 動的メモリ確保と例外を使わない（要件定義書 CR-15、詳細設計書 §8.2）
+  forbiddenPatterns:
+    - '\bnew\b'
+    - '\bdelete\s*(\[\s*\])?\s*[A-Za-z_(]'
+    - '\b(malloc|calloc|realloc|free)\s*\('
+    - 'std::(vector|string|map|unordered_map|list|deque|set|function|unique_ptr|shared_ptr|make_unique|make_shared)\b'
+    - '\b(try|catch|throw)\b'
+
+- id: vba
+  label: VBA
+  order: 3
+  highlight: vb
+  editor: vb
+  lineComment: "'"
+  entryFile: Program.bas
+  extensions: ['.bas', '.cls']
+  classCount:
+    fileExtension: '.cls'
+  check: vba-tool
