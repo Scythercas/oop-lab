@@ -98,8 +98,8 @@ jobs:
         run: npm ci
       - name: ブラウザを入れる
         run: npx playwright install --with-deps chromium firefox webkit
-      - name: ビルド
-        run: npm run build
+      - name: ビルド（画面の動きを教材の中身に左右されずに確かめるため、テスト用教材で作る）
+        run: npm run build:e2e
       - name: E2E テスト（Wrangler の手元の配信で、配信時のヘッダを反映する）
         run: npm run test:e2e
       - name: 失敗したときの記録を残す
