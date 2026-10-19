@@ -4,7 +4,10 @@ import '@fontsource-variable/noto-sans-jp';
 import '@fontsource/biz-udgothic/400.css';
 import '@fontsource/biz-udgothic/700.css';
 import '../styles/global.css';
-import { headScript, languageCss } from '../build/site';
+import '../styles/components.css';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import StorageNotice from '../components/StorageNotice';
+import { headScript, languageCss, siteContent } from '../build/site';
 import { IS_PRERELEASE, NEW_ISSUE_URL, SITE_NAME } from '../config';
 
 interface Props {
@@ -16,6 +19,12 @@ interface Props {
 const { title, description = '車載の題材で、オブジェクト指向の設計の違いを「変更のしやすさ」で体感する学習サイト' } =
   Astro.props;
 const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
+const languages = siteContent().languages.map((language) => ({ id: language.id, label: language.label }));
+const path = Astro.url.pathname;
+const navItems = [
+  { href: '/', label: '概念一覧', current: path === '/' },
+  { href: '/my/', label: '学習データ', current: path === '/my/' },
+];
 ---
 
 <!doctype html>
@@ -26,6 +35,8 @@ const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
     <!-- 描画の前に表示言語を決める（詳細設計書 §5.4）。CSP のハッシュ値は astro.config で同じものから作る -->
     <script is:inline set:html={headScript()} />
     <style is:inline set:html={languageCss()} />
+    <!-- JavaScript が動かないときは、動かない操作部品を隠す（基本設計書 §7） -->
+    <noscript><style is:inline>.js-only{display:none!important}</style></noscript>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <title>{pageTitle}</title>
@@ -43,12 +54,24 @@ const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
         <a class="site-name" href="/">{SITE_NAME}</a>
         <nav aria-label="サイト内の移動">
           <ul class="site-nav">
-            <li><a href="/">概念一覧</a></li>
+            {
+              navItems.map((item) => (
+                <li>
+                  <a href={item.href} aria-current={item.current ? 'page' : undefined}>
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
           </ul>
         </nav>
+        <div class="site-header__language js-only">
+          <LanguageSwitcher client:load languages={languages} />
+        </div>
       </div>
     </header>
     <main class="container site-main">
+      <StorageNotice client:load />
       <slot />
     </main>
     <footer class="site-footer">
@@ -83,6 +106,14 @@ const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
     align-items: center;
     gap: var(--space-4);
     min-height: 3.5rem;
+  }
+
+  .site-header__language {
+    margin-left: auto;
+  }
+
+  .site-nav a[aria-current='page'] {
+    font-weight: 700;
   }
 
   .site-name {

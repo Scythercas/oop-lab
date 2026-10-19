@@ -1,0 +1,18 @@
+---
+// SC-02e 実装課題（基本設計書 §3.10、要件定義書 FR-060〜069）
+import ConceptLayout from '../../../layouts/ConceptLayout.astro';
+import ExerciseEditor from '../../../components/ExerciseEditor';
+import NoScriptNotice from '../../../components/NoScriptNotice.astro';
+import { buildExercisePageData } from '../../../build/page-data';
+import { conceptPaths, siteContent, siteHighlighter } from '../../../build/site';
+
+export const getStaticPaths = () => conceptPaths();
+
+const { concept } = Astro.props;
+const data = buildExercisePageData(concept, siteContent(), await siteHighlighter());
+---
+
+<ConceptLayout concept={concept} tab="exercise">
+  <NoScriptNotice />
+  <ExerciseEditor client:load data={data} />
+</ConceptLayout>

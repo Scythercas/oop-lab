@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-// M1 の土台の確認。画面ができたら、テスト計画書 §6 のシステムテストを足していく。
+// 土台の確認（トップ・このサイトについて・404・配信時のヘッダ）。画面のテストは screens・errors・nonfunctional に置く。
 
 test('トップに「公開準備中」の表示と使い方が出る', async ({ page }) => {
   await page.goto('/');
@@ -29,26 +29,7 @@ test('存在しない URL では「ページが見つかりません」を返す
   await expect(page.getByRole('heading', { level: 1, name: 'ページが見つかりません' })).toBeVisible();
 });
 
-test('自分のドメイン以外へ通信しない（NT-01）', async ({ page, baseURL }) => {
-  const external: string[] = [];
-  page.on('request', (request) => {
-    const url = request.url();
-    if (!url.startsWith(baseURL!) && !url.startsWith('data:')) external.push(url);
-  });
-  for (const path of ['/', '/about/', '/no-such-page/']) {
-    await page.goto(path, { waitUntil: 'networkidle' });
-  }
-  expect(external).toEqual([]);
-});
-
-test('Cookie を使わない（NT-10）', async ({ page, context }) => {
-  const response = await page.goto('/');
-  expect(response?.headers()['set-cookie']).toBeUndefined();
-  expect(await page.evaluate(() => document.cookie)).toBe('');
-  expect(await context.cookies()).toEqual([]);
-});
-
-test('配信時のヘッダと CSP（NT-06）', async ({ page }) => {
+test('配信時のヘッダ（詳細設計書 §9.3）', async ({ page }) => {
   const violations: string[] = [];
   page.on('console', (message) => {
     if (/content security policy|securitypolicyviolation/i.test(message.text())) violations.push(message.text());

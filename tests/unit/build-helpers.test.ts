@@ -1,6 +1,6 @@
 // 規模・Markdown・色付けの単体テスト（テスト計画書 UT-SIZE-01・02、UT-MD-01）
 import { describe, expect, it } from 'vitest';
-import { createCodeHighlighter } from '../../src/build/highlight';
+import { createCodeHighlighter, readableColor } from '../../src/build/highlight';
 import { renderInlineMarkdown, renderMarkdown } from '../../src/build/markdown';
 import { measureSize } from '../../src/build/size';
 import type { Language } from '../../src/content/schema';
@@ -74,6 +74,14 @@ describe('renderMarkdown', () => {
   });
 });
 
+describe('readableColor', () => {
+  it('白地でも 4.5:1 に届かない色（github-light の橙）を暗くし、十分な色は変えない', () => {
+    expect(readableColor('#E36209')).not.toBe('#E36209');
+    expect(readableColor('#E36209')).toMatch(/^#[0-9a-f]{6}$/);
+    expect(readableColor('#24292e')).toBe('#24292e');
+  });
+});
+
 describe('createCodeHighlighter', () => {
   it('1行ずつの HTML にし、記号をエスケープする', async () => {
     const highlighter = await createCodeHighlighter([java, vba]);
@@ -86,7 +94,7 @@ describe('createCodeHighlighter', () => {
   it('VBA の Implements と ByVal にも色を付ける（M0 の T4）', async () => {
     const highlighter = await createCodeHighlighter([java, vba]);
     const [implementsLine, signature] = highlighter.lines('vba', 'Implements IDescribable\nPublic Sub Init(ByVal name As String)\n');
-    expect(implementsLine).toContain('<span style="color:#D73A49">Implements</span>');
-    expect(signature).toContain('<span style="color:#D73A49">ByVal</span>');
+    expect(implementsLine).toContain(`<span style="color:${readableColor('#D73A49')}">Implements</span>`);
+    expect(signature).toContain(`<span style="color:${readableColor('#D73A49')}">ByVal</span>`);
   });
 });

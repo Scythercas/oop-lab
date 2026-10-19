@@ -1,0 +1,20 @@
+---
+// SC-02b 設計比較（基本設計書 §3.7、要件定義書 FR-030〜037）
+import ConceptLayout from '../../../layouts/ConceptLayout.astro';
+import CompareView from '../../../components/CompareView';
+import NoScriptNotice from '../../../components/NoScriptNotice.astro';
+import SpecDetails from '../../../components/SpecDetails.astro';
+import { buildComparePageData } from '../../../build/page-data';
+import { conceptPaths, siteContent, siteHighlighter } from '../../../build/site';
+
+export const getStaticPaths = () => conceptPaths();
+
+const { concept } = Astro.props;
+const data = buildComparePageData(concept, siteContent(), await siteHighlighter());
+---
+
+<ConceptLayout concept={concept} tab="compare">
+  <SpecDetails concept={concept} />
+  <NoScriptNotice />
+  <CompareView client:load data={data} />
+</ConceptLayout>
