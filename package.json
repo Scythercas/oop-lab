@@ -17,7 +17,9 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:tools": "vitest run --config vitest.tools.config.ts",
-    "content:check": "node tools/ci/validate-content.ts"
+    "content:check": "node tools/ci/validate-content.ts",
+    "vba:verify": "node tools/vba-verify/verify.ts",
+    "vba:check": "node tools/ci/check-vba-record.ts"
   },
   "dependencies": {
     "@astrojs/react": "7.1.0",
