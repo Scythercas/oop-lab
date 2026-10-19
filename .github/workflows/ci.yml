@@ -84,6 +84,42 @@ jobs:
       - name: 教材の C++ のコードの実行確認（CT-03・CT-04）
         run: node tools/ci/run-code-checks.ts --lang cpp
 
+  check-vba-tool:
+    name: VBA 確認ツールの単体テスト
+    runs-on: windows-latest
+    defaults:
+      run:
+        # ユーザの PC と同じ Windows PowerShell 5.1 で動かす（詳細設計書 §7.1）
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v7
+      - name: Pester を入れる
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+      - name: 単体テスト（UT-VBA-01〜05）
+        run: |
+          Import-Module Pester -RequiredVersion 5.7.1
+          $configuration = New-PesterConfiguration
+          $configuration.Run.Path = 'tools/vba-verify/tests'
+          $configuration.Run.Exit = $true
+          $configuration.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $configuration
+
+  check-vba-record:
+    name: VBA 確認記録の照合
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: 依存ライブラリを入れる
+        run: npm ci
+      - name: 教材の VBA がすべて Excel で確認済みか照合する（CT-05）
+        run: npm run vba:check
+
   e2e:
     name: E2E テスト（Chromium・Firefox・WebKit）
     needs: check-content
@@ -114,7 +150,7 @@ jobs:
 
   deploy:
     name: デプロイ
-    needs: [check-content, check-java, check-cpp, e2e]
+    needs: [check-content, check-java, check-cpp, check-vba-tool, check-vba-record, e2e]
     # 外部（フォーク）からの Pull Request ではシークレットを渡さないため、デプロイしない
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
