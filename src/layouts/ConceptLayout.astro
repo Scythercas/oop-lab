@@ -1,0 +1,50 @@
+---
+// SC-02 概念ページの共通部分（基本設計書 §3.5）。タブはそれぞれ別の URL を持つ（FR-004）
+import BaseLayout from './BaseLayout.astro';
+import type { Concept } from '../content/loader';
+import { conceptNumber } from '../build/site';
+
+export type ConceptTab = 'explanation' | 'compare' | 'change' | 'quiz' | 'exercise';
+
+interface Props {
+  concept: Concept;
+  tab: ConceptTab;
+}
+
+const TABS: { id: ConceptTab; label: string; path: string }[] = [
+  { id: 'explanation', label: '解説', path: '' },
+  { id: 'compare', label: '設計比較', path: 'compare/' },
+  { id: 'change', label: '変更シミュレーション', path: 'change/' },
+  { id: 'quiz', label: 'クイズ', path: 'quiz/' },
+  { id: 'exercise', label: '実装課題', path: 'exercise/' },
+];
+
+const { concept, tab } = Astro.props;
+const current = TABS.find((item) => item.id === tab)!;
+const number = conceptNumber(concept);
+// 推奨学習順の番号は、丸数字（①〜⑳）で示す
+const mark = number >= 1 && number <= 20 ? String.fromCodePoint(0x2460 + number - 1) : `${number}.`;
+---
+
+<BaseLayout title={`${concept.title}（${current.label}）`} description={concept.summary}>
+  <div class="concept-header">
+    <h1><span class="concept-header__number" aria-hidden="true">{mark}</span> {concept.title}</h1>
+    <p class="concept-header__theme">題材: {concept.theme}</p>
+  </div>
+  <nav aria-label="概念ページの切り替え">
+    <ul class="tabs">
+      {
+        TABS.map((item) => (
+          <li>
+            <a href={`/concepts/${concept.id}/${item.path}`} aria-current={item.id === tab ? 'page' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+  <div class="concept-body">
+    <slot />
+  </div>
+</BaseLayout>

@@ -11,6 +11,12 @@ const KEYWORD_COLOR = '#D73A49';
 const VB_EXTRA_KEYWORDS = /\b(Implements|ByVal|ByRef|Optional|ParamArray)\b/g;
 const FONT_STYLE_ITALIC = 1;
 const FONT_STYLE_BOLD = 2;
+/**
+ * コードを置く背景色（白と、差分の行の背景。src/styles/components.css の --color-added-bg・--color-removed-bg）。
+ * テーマの色には、白地でも 4.5:1 に届かないものがあるため、どの背景でも届くまで暗くする（要件定義書 NFR-08）
+ */
+const CODE_BACKGROUNDS = ['#ffffff', '#f3fcf5', '#fff7f7'];
+const MIN_CONTRAST = 4.6;
 
 export interface CodeHighlighter {
   /** ファイルの中身を、1行ずつの HTML にする */
@@ -59,9 +65,37 @@ export async function createCodeHighlighter(languages: Language[]): Promise<Code
   };
 }
 
+function channels(hex: string): number[] {
+  return [1, 3, 5].map((index) => Number.parseInt(hex.slice(index, index + 2), 16));
+}
+
+function luminance(rgb: number[]): number {
+  const [r, g, b] = rgb.map((value) => {
+    const c = value / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrast(a: number[], b: number[]): number {
+  const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+/** 文字色を、すべての背景色に対して MIN_CONTRAST 以上になるまで暗くする（#RRGGBB 以外はそのまま） */
+export function readableColor(color: string): string {
+  if (!/^#[0-9a-f]{6}$/i.test(color)) return color;
+  const backgrounds = CODE_BACKGROUNDS.map(channels);
+  let rgb = channels(color);
+  while (backgrounds.some((background) => contrast(rgb, background) < MIN_CONTRAST)) {
+    rgb = rgb.map((value) => Math.floor(value * 0.94));
+  }
+  return `#${rgb.map((value) => value.toString(16).padStart(2, '0')).join('')}`;
+}
+
 function span(text: string, color: string | undefined, fontStyle: number): string {
   const styles: string[] = [];
-  if (color !== undefined) styles.push(`color:${color}`);
+  if (color !== undefined) styles.push(`color:${readableColor(color)}`);
   if (fontStyle & FONT_STYLE_ITALIC) styles.push('font-style:italic');
   if (fontStyle & FONT_STYLE_BOLD) styles.push('font-weight:bold');
   return styles.length === 0 ? escapeHtml(text) : `<span style="${styles.join(';')}">${escapeHtml(text)}</span>`;

@@ -1,7 +1,11 @@
 ---
-// SC-01 トップ（概念一覧）。概念の一覧と学習状況は WP2-6 で作る（基本設計書 §3.4）
+// SC-01 トップ（概念一覧。基本設計書 §3.4、要件定義書 FR-001・FR-002）
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ProgressBadges from '../components/ProgressBadges';
 import { SITE_NAME } from '../config';
+import { conceptNumber, conceptOutline, siteContent } from '../build/site';
+
+const concepts = siteContent().concepts;
 ---
 
 <BaseLayout>
@@ -16,7 +20,31 @@ import { SITE_NAME } from '../config';
       <li>クイズと課題で確認する</li>
     </ol>
   </section>
-  <p>教材を準備しています。</p>
+  <section aria-labelledby="concepts-heading">
+    <h2 id="concepts-heading">概念（推奨の学習順）</h2>
+    {
+      concepts.length === 0 ? (
+        <p>教材を準備しています。</p>
+      ) : (
+        <ol class="concept-list">
+          {concepts.map((concept) => (
+            <li class="concept-card">
+              <div class="concept-card__head">
+                <span class="concept-card__number">{conceptNumber(concept)}</span>
+                <a class="concept-card__title" href={`/concepts/${concept.id}/`}>
+                  {concept.title}
+                </a>
+                <span class="concept-card__theme">題材: {concept.theme}</span>
+              </div>
+              <p class="concept-card__summary">{concept.summary}</p>
+              <ProgressBadges client:load outline={conceptOutline(concept)} />
+            </li>
+          ))}
+        </ol>
+      )
+    }
+    <p class="note">※ 学習の記録はこのブラウザ内にだけ保存されます（詳しくは<a href="/my/">「学習データ」</a>）。</p>
+  </section>
 </BaseLayout>
 
 <style>
