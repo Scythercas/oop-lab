@@ -17,6 +17,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:tools": "vitest run --config vitest.tools.config.ts",
     "content:check": "node tools/ci/validate-content.ts"
   },
   "dependencies": {
