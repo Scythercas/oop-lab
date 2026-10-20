@@ -88,6 +88,24 @@ export default function CompareView({ data }: Props) {
         </fieldset>
       </div>
 
+      {/* 2つの設計の構造図（FR-038）。言語によらない */}
+      <div className="structure-diagrams">
+        {(left === right ? [left] : [left, right]).map((kind, index) => {
+          const diagram = data.diagrams[kind];
+          return (
+            diagram !== undefined && (
+              <section key={kind} className="structure-diagrams__item" aria-label={`${labelOf(kind)}の構造`}>
+                <h2 className="structure-diagrams__title">
+                  {left === right ? '' : index === 0 ? '左: ' : '右: '}
+                  {labelOf(kind)}
+                </h2>
+                <div dangerouslySetInnerHTML={{ __html: diagram }} />
+              </section>
+            )
+          );
+        })}
+      </div>
+
       <div data-follow-lang>
         {data.languages.map((language) => {
           const view = data.byLanguage[language.id];

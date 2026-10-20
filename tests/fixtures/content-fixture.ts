@@ -204,6 +204,14 @@ const EXPLANATION = lines(
   '',
   'テスト用の概念です。',
   '',
+  '::: 図 unapplied proper',
+  '',
+  '::: くわしく',
+  '',
+  'くわしい説明です。',
+  '',
+  ':::',
+  '',
   '## 目的',
   '',
   'テストに使います。',
@@ -220,6 +228,8 @@ const EXPLANATION = lines(
   '',
   'テストのとき。',
   '',
+  '::: 図 usage',
+  '',
   '## 使わない方がよい時',
   '',
   '本番のとき。',
@@ -232,6 +242,37 @@ const EXPLANATION = lines(
   '',
   'なし。',
 );
+
+/** 図（詳細設計書 §3.3）。必ず置く図（spec・設計ごと・usage）をそろえる */
+const DIAGRAMS = [
+  {
+    id: 'spec',
+    type: 'structure',
+    caption: 'ランプの表示の流れ',
+    nodes: [
+      { id: 'main', label: 'Main', col: 1, row: 1 },
+      { id: 'lamp', label: 'ランプ', lines: ['名前'], col: 2, row: 1 },
+    ],
+    edges: [{ from: 'main', to: 'lamp', label: '表示を頼む' }],
+  },
+  ...KINDS.map((kind) => ({
+    id: kind,
+    type: 'structure',
+    caption: `${kind} の構造`,
+    nodes: [
+      { id: 'main', label: 'Main', col: 1, row: 1 },
+      { id: 'lamp', label: 'ランプ', lines: [{ text: kind === 'unapplied' ? '名前（公開）' : '名前（非公開）', style: kind === 'unapplied' ? 'bad' : 'good' }], col: 2, row: 1, style: kind === 'proper' ? 'rule' : 'normal' },
+    ],
+    edges: [{ from: 'main', to: 'lamp', label: kind === 'unapplied' ? '書き換え' : '頼む', style: kind === 'unapplied' ? 'bad' : 'normal' }],
+  })),
+  {
+    id: 'usage',
+    type: 'decision',
+    caption: '使うかどうかの判断',
+    questions: [{ text: '規則がある？', no: '使わなくてよい' }],
+    yes: '使う',
+  },
+];
 
 const CATEGORIES = ['definition', 'definition', 'merit', 'merit', 'usage', 'usage', 'mistake', 'mistake', 'code', 'code'];
 
@@ -287,12 +328,13 @@ export function writeFixtureContent(root: string): void {
       title: 'サンプル',
       theme: '前照灯と尾灯',
       summary: 'テスト用の概念',
-      spec: 'ランプの名前と状態を表示する。',
+      spec: lines('ランプの名前と状態を表示する。', '', '::: 図 spec').trimEnd(),
       related: [],
       variations: KINDS,
     }),
   );
   write(join(dir, 'explanation.md'), EXPLANATION);
+  write(join(dir, 'diagrams.yaml'), stringify(DIAGRAMS));
   write(join(dir, 'expected-output.txt'), expectedOutput(BASE));
   write(join(dir, 'notes', 'vba.md'), lines('---', 'unsupported: テスト用の注記です。', '---', 'VBA の補足です。'));
   for (const kind of KINDS) {

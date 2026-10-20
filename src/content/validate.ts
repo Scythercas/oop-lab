@@ -1,6 +1,7 @@
-// 教材の検証（詳細設計書 §3.5 の V01〜V11）。V01・V05・V06 の一部は読み込みの時点で記録する。
+// 教材の検証（詳細設計書 §3.5 の V01〜V13）。V01・V05・V06 の一部は読み込みの時点で記録する。
 import { extname } from 'node:path';
 import { type Diagnostic, DiagnosticList } from './diagnostics.ts';
+import { parseDirectives, referencedDiagrams, visibleTextLength } from './directives.ts';
 import { type CodeByLanguage, type Concept, type Content, type SourceFile, loadContent } from './loader.ts';
 import {
   CHOICE_IDS,
@@ -10,6 +11,8 @@ import {
   type Language,
   MIN_QUESTIONS_PER_CATEGORY,
   QUESTION_CATEGORIES,
+  REQUIRED_DIAGRAMS,
+  VISIBLE_TEXT_LIMITS,
 } from './schema.ts';
 import { countLines } from './text-format.ts';
 import { findVbaProblems } from './vba-lint.ts';
@@ -68,6 +71,8 @@ function validateContent(content: Content, diagnostics: DiagnosticList): void {
     checkForbiddenPatterns(concept, content.languages, states, base, diagnostics);
     checkVba(concept, states, base, diagnostics);
     checkCommentary(concept, base, diagnostics);
+    checkDiagrams(concept, base, diagnostics);
+    checkVisibleText(concept, base, diagnostics);
   }
 }
 
@@ -339,6 +344,94 @@ function checkCommentary(concept: Concept, base: string, diagnostics: Diagnostic
         `「${DESIGN_LABELS[design.kind]}」の解説に、見出し「## 良い点」か「## 問題点」を入れてください`,
       );
     }
+  }
+}
+
+/** 教材の Markdown の項目（指定の検証と、文字数の目安に使う） */
+interface MarkdownField {
+  file: string;
+  text: string;
+}
+
+function markdownFields(concept: Concept, base: string): MarkdownField[] {
+  const fields: MarkdownField[] = [
+    { file: `${base}/concept.yaml#spec`, text: concept.spec },
+    { file: `${base}/explanation.md`, text: concept.explanation },
+  ];
+  for (const design of concept.designs) fields.push({ file: `${base}/variations/${design.kind}/commentary.md`, text: design.commentary });
+  for (const change of concept.changes) {
+    const file = `${base}/changes/${change.name}/change.yaml`;
+    fields.push({ file, text: change.description });
+    for (const text of Object.values(change.commentary)) fields.push({ file, text });
+  }
+  for (const [languageId, note] of Object.entries(concept.notes)) fields.push({ file: `${base}/notes/${languageId}.md`, text: note.body });
+  for (const question of concept.questions) fields.push({ file: `${base}/quiz/questions.yaml#${question.id}`, text: question.stem });
+  for (const answer of concept.answers) {
+    const file = `${base}/quiz/answers.yaml#${answer.questionId}`;
+    fields.push({ file, text: answer.explanation });
+    for (const text of Object.values(answer.wrongReasons)) fields.push({ file, text });
+  }
+  for (const exercise of concept.exercises) {
+    const file = `${base}/exercises/${exercise.name}/exercise.yaml`;
+    fields.push({ file, text: exercise.statement }, { file, text: exercise.additionalSpec });
+  }
+  return fields;
+}
+
+/** V12: 図の定義と、Markdown の中の指定（くわしく・図） */
+function checkDiagrams(concept: Concept, base: string, diagnostics: DiagnosticList): void {
+  const file = `${base}/diagrams.yaml`;
+  const byId = new Map(concept.diagrams.map((diagram) => [diagram.id, diagram]));
+  reportDuplicates(
+    concept.diagrams.map((diagram) => diagram.id),
+    (id) => diagnostics.error('V12', file, `図の名前「${id}」が重なっています`),
+  );
+  const required = [...REQUIRED_DIAGRAMS, ...concept.variations.map((kind) => ({ id: kind, type: 'structure' as const }))];
+  for (const { id, type } of required) {
+    const diagram = byId.get(id);
+    if (diagram === undefined) diagnostics.error('V12', file, `必ず置く図「${id}」がありません`);
+    else if (diagram.type !== type) diagnostics.error('V12', file, `図「${id}」は ${type} にしてください`);
+  }
+  for (const diagram of concept.diagrams) {
+    if (diagram.type !== 'structure') continue;
+    const nodeIds = diagram.nodes.map((node) => node.id);
+    reportDuplicates(nodeIds, (id) => diagnostics.error('V12', file, `図「${diagram.id}」の箱「${id}」が重なっています`));
+    for (const edge of diagram.edges ?? []) {
+      for (const end of [edge.from, edge.to]) {
+        if (!nodeIds.includes(end)) diagnostics.error('V12', file, `図「${diagram.id}」の矢印が、ない箱「${end}」を指しています`);
+      }
+    }
+  }
+  for (const field of markdownFields(concept, base)) {
+    const { segments, problems } = parseDirectives(field.text);
+    for (const problem of problems) diagnostics.error('V12', field.file, problem);
+    for (const id of referencedDiagrams(segments)) {
+      if (!byId.has(id)) diagnostics.error('V12', field.file, `図「${id}」が diagrams.yaml にありません`);
+    }
+  }
+}
+
+/** V13: 最初に見える文字数の目安（警告。要件定義書 CR-17） */
+function checkVisibleText(concept: Concept, base: string, diagnostics: DiagnosticList): void {
+  const warn = (file: string, length: number, limit: number) => {
+    if (length > limit) diagnostics.warning('V13', file, `最初に見える文字が ${length} 字あります（目安は ${limit} 字以内。詳しい説明は「::: くわしく」に入れてください）`);
+  };
+  warn(`${base}/concept.yaml#spec`, visibleTextLength(concept.spec), VISIBLE_TEXT_LIMITS.spec);
+  warn(`${base}/explanation.md`, visibleTextLength(concept.explanation), VISIBLE_TEXT_LIMITS.explanation);
+  for (const design of concept.designs) {
+    warn(`${base}/variations/${design.kind}/commentary.md`, visibleTextLength(design.commentary), VISIBLE_TEXT_LIMITS.commentary);
+  }
+  for (const change of concept.changes) {
+    const length = Object.values(change.commentary).reduce((sum, text) => sum + visibleTextLength(text), 0);
+    warn(`${base}/changes/${change.name}/change.yaml#commentary`, length, VISIBLE_TEXT_LIMITS.changeCommentary);
+  }
+  for (const [languageId, note] of Object.entries(concept.notes)) {
+    warn(`${base}/notes/${languageId}.md`, visibleTextLength(note.body), VISIBLE_TEXT_LIMITS.note);
+  }
+  for (const answer of concept.answers) {
+    const texts = [answer.explanation, ...Object.values(answer.wrongReasons)];
+    const length = texts.reduce((sum, text) => sum + visibleTextLength(text), 0);
+    warn(`${base}/quiz/answers.yaml#${answer.questionId}`, length, VISIBLE_TEXT_LIMITS.quizAnswer);
   }
 }
 

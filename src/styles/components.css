@@ -691,3 +691,240 @@ select {
 .data-manager__message {
   min-height: 1.5em;
 }
+
+/* 図（詳細設計書 §5.7）。SVG の要素にはクラス名だけが付いている */
+.diagrams {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin: var(--space-3) 0;
+}
+
+.diagram {
+  margin: 0;
+  max-width: 100%;
+}
+
+.diagram .dg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  font-family: var(--font-body);
+}
+
+.diagram__caption {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.dg-box {
+  fill: var(--color-bg);
+  stroke: var(--color-border);
+  stroke-width: 1.5;
+}
+
+.dg-label {
+  fill: var(--color-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dg-line {
+  fill: var(--color-text);
+  font-size: 13px;
+}
+
+.dg-node--rule .dg-box {
+  fill: #eaf4ff;
+  stroke: var(--color-accent);
+  stroke-width: 2.5;
+}
+
+.dg-node--good .dg-box {
+  fill: var(--color-added-bg);
+  stroke: var(--color-added-mark);
+}
+
+.dg-node--bad .dg-box {
+  fill: var(--color-removed-bg);
+  stroke: var(--color-removed-mark);
+}
+
+.dg-node--muted .dg-box {
+  fill: var(--color-surface);
+  stroke: var(--color-border);
+}
+
+.dg-node--muted .dg-label {
+  fill: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.dg-line--rule {
+  fill: var(--color-accent);
+  font-weight: 700;
+}
+
+.dg-line--good {
+  fill: var(--color-added-mark);
+  font-weight: 700;
+}
+
+.dg-line--bad {
+  fill: var(--color-removed-mark);
+  font-weight: 700;
+}
+
+.dg-line--muted {
+  fill: var(--color-text-muted);
+}
+
+.dg-edge {
+  fill: none;
+  stroke: var(--color-text-muted);
+  stroke-width: 1.5;
+}
+
+.dg-head {
+  fill: var(--color-text-muted);
+}
+
+.dg-arrow--rule .dg-edge,
+.dg-arrow--good .dg-edge {
+  stroke: var(--color-added-mark);
+  stroke-width: 2;
+}
+
+.dg-arrow--rule .dg-head,
+.dg-arrow--good .dg-head {
+  fill: var(--color-added-mark);
+}
+
+.dg-arrow--bad .dg-edge {
+  stroke: var(--color-removed-mark);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+.dg-arrow--bad .dg-head {
+  fill: var(--color-removed-mark);
+}
+
+.dg-edge-label {
+  fill: var(--color-text);
+  font-size: 13px;
+  paint-order: stroke;
+  stroke: var(--color-bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.dg-arrow--bad .dg-edge-label {
+  fill: var(--color-removed-mark);
+}
+
+/* 設計比較の構造図（FR-038） */
+.structure-diagrams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
+}
+
+.structure-diagrams__item {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.structure-diagrams__title {
+  margin: 0 0 var(--space-2);
+  font-size: 1rem;
+}
+
+/* 「くわしく」（FR-023） */
+details.more {
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+details.more > summary {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+details.more > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.more > summary::before {
+  content: '▶ ';
+  font-size: 0.75em;
+}
+
+details.more[open] > summary::before {
+  content: '▼ ';
+}
+
+.more__body {
+  margin-top: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--color-border);
+}
+
+/* 直したファイルの図（FR-046） */
+.change-map {
+  margin: var(--space-2) 0;
+}
+
+.change-map__title {
+  margin: 0 0 var(--space-1);
+}
+
+.change-map__files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.change-map__file {
+  display: inline-flex;
+  flex-direction: column;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.change-map__name {
+  font-family: var(--font-code);
+  font-weight: 700;
+}
+
+.change-map__file--modified,
+.change-map__file--added,
+.change-map__file--deleted {
+  border: 2px solid var(--color-accent);
+  background: #eaf4ff;
+}
+
+.change-map__file--unchanged {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.change-map__file--unchanged .change-map__name {
+  font-weight: 400;
+}

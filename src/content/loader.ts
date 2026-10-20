@@ -10,6 +10,7 @@ import {
   type ChangeMeta,
   type ConceptMeta,
   type DesignKind,
+  type Diagram,
   type ExerciseMeta,
   type Language,
   type Question,
@@ -17,6 +18,7 @@ import {
   changeSchema,
   conceptSchema,
   describeIssues,
+  diagramsSchema,
   exerciseSchema,
   languagesSchema,
   notesFrontMatterSchema,
@@ -69,6 +71,8 @@ export interface Concept extends ConceptMeta {
   questions: Question[];
   answers: Answer[];
   exercises: Exercise[];
+  /** 図（diagrams.yaml。詳細設計書 §3.3） */
+  diagrams: Diagram[];
 }
 
 export interface Content {
@@ -216,6 +220,7 @@ function loadConcept(reader: ContentReader, dir: string, folder: string, languag
     questions: reader.yaml(join(dir, 'quiz', 'questions.yaml'), questionsSchema) ?? [],
     answers: reader.yaml(join(dir, 'quiz', 'answers.yaml'), answersSchema) ?? [],
     exercises,
+    diagrams: reader.yaml(join(dir, 'diagrams.yaml'), diagramsSchema) ?? [],
   };
 }
 

@@ -380,3 +380,43 @@ test('ST-17: エディタと読み込んだファイルの中のスクリプト�
   await expect(page.locator('.cm-content')).toHaveText(attack);
   expect(await page.evaluate(() => (window as unknown as { __attacked?: number }).__attacked)).toBeUndefined();
 });
+
+test.describe('図と「くわしく」', () => {
+  test('ST-18: 解説と設計比較に図が出て、「くわしく」で詳しい説明を開け閉めできる', async ({ page }) => {
+    await page.goto(`/concepts/${SAMPLE}/`);
+    await waitForHydration(page);
+    await expect(page.getByRole('img', { name: 'unapplied の構造' })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'proper の構造' })).toBeVisible();
+    await expect(page.getByRole('img', { name: '使うかどうかの判断' })).toBeVisible();
+    await expect(page.getByText('くわしい説明です。')).toBeHidden();
+    await page.getByText('くわしく', { exact: true }).click();
+    await expect(page.getByText('くわしい説明です。')).toBeVisible();
+    await page.getByText('くわしく', { exact: true }).click();
+    await expect(page.getByText('くわしい説明です。')).toBeHidden();
+
+    // 設計比較: 選んだ2つの設計の構造図
+    await page.goto(`/concepts/${SAMPLE}/compare/`);
+    await waitForHydration(page);
+    await expect(page.getByRole('region', { name: '未適用の構造' }).getByRole('img', { name: 'unapplied の構造' })).toBeVisible();
+    await expect(page.getByRole('region', { name: '適切の構造' }).getByRole('img', { name: 'proper の構造' })).toBeVisible();
+    await page.getByLabel('右', { exact: true }).selectOption('overapplied');
+    await expect(page.getByRole('img', { name: 'overapplied の構造' })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'proper の構造' })).toHaveCount(0);
+  });
+
+  test('ST-19: 変更シミュレーションで、直したファイルが図で示され、修正量と一致する', async ({ page }) => {
+    await page.goto(`/concepts/${SAMPLE}/change/`);
+    await waitForHydration(page);
+    const block = visibleBlock(page);
+    for (const name of ['未適用の設計', '適切の設計']) {
+      const panel = block.getByRole('region', { name });
+      const metrics = await panel.locator('.change-panel__metrics').textContent();
+      const changedFiles = Number(/修正量: (\d+)ファイル/.exec(metrics ?? '')![1]);
+      await expect(panel.locator('.change-map__title')).toContainText(`直したファイル ${changedFiles} /`);
+      await expect(panel.locator('.change-map__file:not(.change-map__file--unchanged)')).toHaveCount(changedFiles);
+    }
+    const proper = block.getByRole('region', { name: '適切の設計' });
+    await expect(proper.locator('.change-map__file--modified')).toContainText('Lamp.java');
+    await expect(proper.locator('.change-map__file--unchanged')).toContainText(['Main.java']);
+  });
+});
