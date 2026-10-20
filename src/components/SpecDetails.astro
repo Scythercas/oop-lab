@@ -1,7 +1,7 @@
 ---
 // 題材の仕様（「仕様を見る」。要件定義書 FR-030）
 import type { Concept } from '../content/loader';
-import { renderMarkdown } from '../build/markdown';
+import { renderConceptMarkdown } from '../build/page-data';
 
 interface Props {
   concept: Concept;
@@ -12,5 +12,5 @@ const { concept } = Astro.props;
 
 <details class="spec">
   <summary>仕様を見る</summary>
-  <div class="prose" set:html={renderMarkdown(concept.spec)} />
+  <div class="prose" set:html={renderConceptMarkdown(concept, concept.spec)} />
 </details>

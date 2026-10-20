@@ -133,6 +133,63 @@ export type ExerciseMeta = z.infer<typeof exerciseSchema>;
 
 export const notesFrontMatterSchema = z.strictObject({ unsupported: text.optional() });
 
+/** 図の箱・行・矢印の見た目（詳細設計書 §3.3）。色だけに頼らず、意味は語句でも書く */
+export const DIAGRAM_STYLES = ['normal', 'rule', 'good', 'bad', 'muted'] as const;
+export type DiagramStyle = (typeof DIAGRAM_STYLES)[number];
+
+const diagramId = z.string().regex(/^[a-z][a-z0-9-]*$/, '英小文字・数字・ハイフンにしてください');
+const diagramStyle = z.enum(DIAGRAM_STYLES).optional();
+const diagramLine = z.union([text, z.strictObject({ text, style: diagramStyle })]);
+export type DiagramLine = z.infer<typeof diagramLine>;
+
+const structureNode = z.strictObject({
+  id: diagramId,
+  label: text,
+  lines: z.array(diagramLine).optional(),
+  col: z.number().int().positive(),
+  row: z.number().positive().multipleOf(0.5),
+  style: diagramStyle,
+});
+
+const structureEdge = z.strictObject({ from: diagramId, to: diagramId, label: text.optional(), style: diagramStyle });
+
+export const diagramSchema = z.discriminatedUnion('type', [
+  z.strictObject({
+    id: diagramId,
+    type: z.literal('structure'),
+    caption: text,
+    nodes: z.array(structureNode).min(1),
+    edges: z.array(structureEdge).optional(),
+  }),
+  z.strictObject({
+    id: diagramId,
+    type: z.literal('decision'),
+    caption: text,
+    questions: z.array(z.strictObject({ text, no: text })).min(1),
+    yes: text,
+  }),
+]);
+export const diagramsSchema = z.array(diagramSchema);
+export type Diagram = z.infer<typeof diagramSchema>;
+export type StructureDiagram = Extract<Diagram, { type: 'structure' }>;
+export type DecisionDiagram = Extract<Diagram, { type: 'decision' }>;
+
+/** 必ず置く図（設計ごとの構造図のほかに）。V12 */
+export const REQUIRED_DIAGRAMS: { id: string; type: Diagram['type'] }[] = [
+  { id: 'spec', type: 'structure' },
+  { id: 'usage', type: 'decision' },
+];
+
+/** 最初に見える文字数の目安（要件定義書 CR-17）。V13 */
+export const VISIBLE_TEXT_LIMITS = {
+  spec: 150,
+  explanation: 600,
+  commentary: 80,
+  changeCommentary: 120,
+  note: 150,
+  quizAnswer: 100,
+} as const;
+
 /** zod の検証結果を「項目: 内容」の文字列の一覧にする */
 export function describeIssues(error: z.ZodError): string[] {
   return error.issues.map((issue) => (issue.path.length > 0 ? `${issue.path.join('.')}: ${issue.message}` : issue.message));

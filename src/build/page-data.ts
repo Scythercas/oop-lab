@@ -2,9 +2,10 @@
 // 3言語分をすべて含めるので、表示言語を切り替えても通信しない。クイズの正解は含めず、別のファイルにする（NFR-15 ③）。
 import type { CodeByLanguage, Concept, Content, SourceFile } from '../content/loader.ts';
 import { DESIGN_LABELS, type DesignKind, type Language, type QuestionCategory } from '../content/schema.ts';
+import { renderDiagramBlock } from './diagram.ts';
 import { type StateDiff, diffStates } from './diff.ts';
 import type { CodeHighlighter } from './highlight.ts';
-import { renderInlineMarkdown, renderMarkdown } from './markdown.ts';
+import { type DiagramBlocks, renderInlineMarkdown, renderMarkdown } from './markdown.ts';
 import { type SizeMetrics, measureSize } from './size.ts';
 
 export interface LanguageInfo {
@@ -36,6 +37,8 @@ export interface ComparePageData {
   conceptId: string;
   languages: LanguageInfo[];
   designs: DesignInfo[];
+  /** 設計ごとの構造図（HTML。言語によらない。FR-038） */
+  diagrams: Partial<Record<DesignKind, string>>;
   byLanguage: Record<
     string,
     {
@@ -117,6 +120,23 @@ export interface ExplanationPageData {
   related: { id: string; title: string }[];
 }
 
+const diagramCache = new WeakMap<Concept, DiagramBlocks>();
+
+/** 概念の図（名前 → HTML）。Markdown の「図」の指定と、設計比較の構造図に使う */
+export function diagramBlocks(concept: Concept): DiagramBlocks {
+  let blocks = diagramCache.get(concept);
+  if (blocks === undefined) {
+    blocks = new Map(concept.diagrams.map((diagram) => [diagram.id, renderDiagramBlock(diagram)]));
+    diagramCache.set(concept, blocks);
+  }
+  return blocks;
+}
+
+/** 概念の Markdown を HTML にする（その概念の図を使える） */
+export function renderConceptMarkdown(concept: Concept, source: string): string {
+  return renderMarkdown(source, diagramBlocks(concept));
+}
+
 export function answersUrl(conceptId: string): string {
   return `/data/answers/${conceptId}.json`;
 }
@@ -156,8 +176,14 @@ export function buildComparePageData(concept: Concept, content: Content, highlig
     designs: concept.designs.map((design) => ({
       kind: design.kind,
       label: DESIGN_LABELS[design.kind],
-      commentaryHtml: renderMarkdown(design.commentary),
+      commentaryHtml: renderConceptMarkdown(concept, design.commentary),
     })),
+    diagrams: Object.fromEntries(
+      kinds.flatMap((kind) => {
+        const block = diagramBlocks(concept).get(kind);
+        return block === undefined ? [] : [[kind, block]];
+      }),
+    ),
     byLanguage,
   };
 }
@@ -187,12 +213,12 @@ export function buildChangePageData(concept: Concept, content: Content, highligh
     return {
       id: change.id,
       title: change.title,
-      descriptionHtml: renderMarkdown(change.description),
+      descriptionHtml: renderConceptMarkdown(concept, change.description),
       expectation: change.expectation,
       commentaryHtml: {
-        reason: renderMarkdown(change.commentary.reason),
-        missRisk: renderMarkdown(change.commentary.missRisk),
-        lesson: renderMarkdown(change.commentary.lesson),
+        reason: renderConceptMarkdown(concept, change.commentary.reason),
+        missRisk: renderConceptMarkdown(concept, change.commentary.missRisk),
+        lesson: renderConceptMarkdown(concept, change.commentary.lesson),
       },
       byLanguage,
     };
@@ -215,7 +241,7 @@ export function buildQuizPageData(concept: Concept, content: Content, highlighte
       const item: QuizQuestionView = {
         id: question.id,
         category: question.category,
-        stemHtml: renderMarkdown(question.stem),
+        stemHtml: renderConceptMarkdown(concept, question.stem),
         choices: question.choices.map((choice) => ({ id: choice.id, html: renderInlineMarkdown(choice.text) })),
       };
       if (question.code !== undefined) {
@@ -238,8 +264,8 @@ export function buildAnswersData(concept: Concept): AnswersData {
   for (const answer of concept.answers) {
     data[answer.questionId] = {
       correct: answer.correct,
-      explanationHtml: renderMarkdown(answer.explanation),
-      wrongReasonsHtml: Object.fromEntries(Object.entries(answer.wrongReasons).map(([id, text]) => [id, renderMarkdown(text)])),
+      explanationHtml: renderConceptMarkdown(concept, answer.explanation),
+      wrongReasonsHtml: Object.fromEntries(Object.entries(answer.wrongReasons).map(([id, text]) => [id, renderConceptMarkdown(concept, text)])),
     };
   }
   return data;
@@ -267,8 +293,8 @@ export function buildExercisePageData(concept: Concept, content: Content, highli
     })),
     exercises: concept.exercises.map((exercise) => ({
       id: exercise.id,
-      statementHtml: renderMarkdown(exercise.statement),
-      additionalSpecHtml: renderMarkdown(exercise.additionalSpec),
+      statementHtml: renderConceptMarkdown(concept, exercise.statement),
+      additionalSpecHtml: renderConceptMarkdown(concept, exercise.additionalSpec),
       checks: exercise.checks.map((check) => ({ id: check.id, text: check.text })),
       startCode: Object.fromEntries(
         content.languages.map((language) => [language.id, buildStartCode(unapplied[language.id] ?? [], language)]),
@@ -285,12 +311,12 @@ export function buildExplanationPageData(concept: Concept, content: Content): Ex
     conceptId: concept.id,
     title: concept.title,
     theme: concept.theme,
-    specHtml: renderMarkdown(concept.spec),
-    explanationHtml: renderMarkdown(concept.explanation),
+    specHtml: renderConceptMarkdown(concept, concept.spec),
+    explanationHtml: renderConceptMarkdown(concept, concept.explanation),
     notes: Object.fromEntries(
       Object.entries(concept.notes).map(([languageId, note]) => [
         languageId,
-        { unsupported: note.unsupported, bodyHtml: renderMarkdown(note.body) },
+        { unsupported: note.unsupported, bodyHtml: renderConceptMarkdown(concept, note.body) },
       ]),
     ),
     related: concept.related.flatMap((id) => {

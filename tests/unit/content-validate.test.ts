@@ -1,4 +1,4 @@
-// 教材の検証の単体テスト（テスト計画書 UT-VAL-01〜11、UT-CHK-03）
+// 教材の検証の単体テスト（テスト計画書 UT-VAL-01〜13、UT-CHK-03）
 import { mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -234,5 +234,34 @@ describe('V11 設計の解説', () => {
     expect(errorsOf('V11')).toEqual([
       'concepts/sample/variations/overapplied/commentary.md: 「過剰適用」の解説に、見出し「## 良い点」か「## 問題点」を入れてください',
     ]);
+  });
+});
+
+describe('V12 図と指定', () => {
+  it('必ず置く図がなく、矢印がない箱を指し、指定の名前と書き方が誤っている', () => {
+    edit(join(concept(), 'diagrams.yaml'), (t) => t.replace('- id: usage', '- id: when').replace('to: lamp', 'to: lump'));
+    edit(join(concept(), 'explanation.md'), (t) => t.replace('::: 図 unapplied proper', '::: 図 unapplied missing').replace('\n:::\n', '\n'));
+    expect(errorsOf('V12')).toEqual([
+      'concepts/sample/diagrams.yaml: 必ず置く図「usage」がありません',
+      'concepts/sample/diagrams.yaml: 図「spec」の矢印が、ない箱「lump」を指しています',
+      'concepts/sample/explanation.md: 「::: くわしく」が「:::」で閉じられていません',
+      'concepts/sample/explanation.md: 図「missing」が diagrams.yaml にありません',
+      'concepts/sample/explanation.md: 図「usage」が diagrams.yaml にありません',
+    ]);
+  });
+
+  it('図の定義のファイルがない', () => {
+    rmSync(join(concept(), 'diagrams.yaml'));
+    expect(errorsOf('V05')).toEqual(['concepts/sample/diagrams.yaml: ファイルがありません']);
+  });
+});
+
+describe('V13 最初に見える文字数（警告）', () => {
+  it('目安を超えると警告し、「くわしく」の中は数えない', () => {
+    edit(join(concept(), 'variations', 'proper', 'commentary.md'), (t) => `${t}\n${'長'.repeat(81)}\n`);
+    edit(join(concept(), 'variations', 'unapplied', 'commentary.md'), (t) => `${t}\n::: くわしく\n${'長'.repeat(200)}\n:::\n`);
+    const warnings = check().diagnostics.filter((d) => d.rule === 'V13');
+    expect(warnings.map((d) => [d.level, d.file])).toEqual([['warning', 'concepts/sample/variations/proper/commentary.md']]);
+    expect(warnings[0].message).toMatch(/^最初に見える文字が \d+ 字あります（目安は 80 字以内。/);
   });
 });

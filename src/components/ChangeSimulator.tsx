@@ -2,7 +2,7 @@
 import { useId, useState } from 'react';
 import type { ChangePageData, ChangeView } from '../build/page-data.ts';
 import type { DesignKind } from '../content/schema.ts';
-import { type DiffMetrics, pickInitialFile } from '../domain/diff-view.ts';
+import { type DiffMetrics, type StateDiff, pickInitialFile } from '../domain/diff-view.ts';
 import { STATUS_LABELS, UnifiedDiff } from './CodeTable.tsx';
 import { hydratedMark, useDisplayLanguage, useHydrated } from './learning-store-client.ts';
 
@@ -133,6 +133,7 @@ function LanguageResult({ data, change, languageId, languageLabel, kinds, labelO
                 <br />
                 <span className="metric-added">+{metrics.addedLines}行</span> <span className="metric-removed">-{metrics.removedLines}行</span>
               </p>
+              <ChangeMap diff={result.diff} />
               <div className="change-panel__file">
                 <label htmlFor={`${idPrefix}-${panel}-file`}>ファイル:</label>
                 <select
@@ -178,6 +179,38 @@ function LanguageResult({ data, change, languageId, languageLabel, kinds, labelO
         </dl>
       </figure>
     </section>
+  );
+}
+
+/** 直したファイルと直さなかったファイルの図（FR-046）。差分の計算結果から作る */
+function ChangeMap({ diff }: { diff: StateDiff }) {
+  const changed = diff.files.filter((file) => file.status !== 'unchanged');
+  const unchanged = diff.files.filter((file) => file.status === 'unchanged');
+  const amount = (file: StateDiff['files'][number]) => {
+    if (file.status === 'added') return `追加 +${file.addedLines}`;
+    if (file.status === 'deleted') return `削除 -${file.removedLines}`;
+    return `+${file.addedLines} -${file.removedLines}`;
+  };
+  return (
+    <div className="change-map">
+      <p className="change-map__title">
+        直したファイル <strong>{changed.length}</strong> / {diff.files.length}
+      </p>
+      <ul className="change-map__files">
+        {changed.map((file) => (
+          <li key={file.path} className={`change-map__file change-map__file--${file.status}`}>
+            <span className="change-map__name">{file.path}</span>
+            <span className="change-map__amount">{amount(file)}</span>
+          </li>
+        ))}
+        {unchanged.map((file) => (
+          <li key={file.path} className="change-map__file change-map__file--unchanged">
+            <span className="change-map__name">{file.path}</span>
+            <span className="change-map__amount">変更なし</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
