@@ -1,0 +1,223 @@
+- id: encapsulation.q01
+  category: definition
+  stem: カプセル化の説明として、最も適切なものはどれですか。
+  choices:
+  - id: a
+    text: クラスの数を減らし、プログラムを1つのファイルにまとめること
+  - id: b
+    text: データとそれを扱う処理をまとめ、データを変える方法をクラスが用意した入口に限ること
+  - id: c
+    text: すべての変数に、取得と設定のメソッドを付けること
+  - id: d
+    text: 処理の中身を、ほかの人に読めないように暗号化すること
+- id: encapsulation.q02
+  category: definition
+  stem: シフト位置をカプセル化して、主に防ぎたいことはどれですか。
+  choices:
+  - id: a
+    text: シフト位置を表示する処理が遅くなること
+  - id: b
+    text: シフト位置のデータが、メモリを多く使うこと
+  - id: c
+    text: シフトレバーのクラスが増えること
+  - id: d
+    text: 走行中に R に入るなど、シフト位置が規則に反した状態になること
+- id: encapsulation.q03
+  category: merit
+  stem: 変更要求「走行中は P に入れない」で、適切な設計のほうが修正量が少なかった理由はどれですか。
+  choices:
+  - id: a
+    text: 規則が変速機のクラスの中の1か所にまとまっていたから
+  - id: b
+    text: 適切な設計のほうが、ファイルの数が少なかったから
+  - id: c
+    text: 適切な設計では、P ボタンを使っていなかったから
+  - id: d
+    text: 適切な設計では、車速を確かめていなかったから
+- id: encapsulation.q04
+  category: merit
+  stem: カプセル化のデメリットとして、最も適切なものはどれですか。
+  choices:
+  - id: a
+    text: データが規則に反した状態になりやすくなる
+  - id: b
+    text: 規則を変えるときに、直す場所が増える
+  - id: c
+    text: 規則を無視して設定したい、といった特別な要求に、専用の入口を足す手間がかかる
+  - id: d
+    text: 呼び出す側が、受け付けたか拒否したかを知れなくなる
+- id: encapsulation.q05
+  category: usage
+  stem: 次のうち、カプセル化の効果が最も大きい場面はどれですか。
+  choices:
+  - id: a
+    text: 1つの関数の中でだけ使う、計算の途中の値
+  - id: b
+    text: '取りうる値に規則があり、複数の機能から変更されるデータ（例: ドアの施錠状態を、キーとスマートフォンと車速連動の自動施錠から変える）'
+  - id: c
+    text: ある時点の車速と時刻を記録し、そのまま画面に渡すだけのデータ
+  - id: d
+    text: 設定ファイルから読み込み、二度と変えない定数
+- id: encapsulation.q06
+  category: usage
+  stem: 次のうち、データを非公開にして入口を用意する（カプセル化する）必要が最も小さいものはどれですか。
+  choices:
+  - id: a
+    text: ナビゲーションの画面に渡すために、目的地の名前と到着予定時刻を1つにまとめただけのデータ（値に守るべき規則はない）
+  - id: b
+    text: バッテリーの残量で、0〜100% の範囲を守る必要があるデータ
+  - id: c
+    text: エアコンの設定温度で、設定できる範囲（18〜32℃）が決まっていて、運転席と助手席の操作パネルの両方から変えるデータ
+  - id: d
+    text: 燃料の残量で、給油のたびに上限を確かめる必要があるデータ
+- id: encapsulation.q07
+  category: mistake
+  stem: 「シフト位置を private にして、取得のメソッドと、値をそのまま代入するだけの設定のメソッドを付けたので、カプセル化できた」という考えについて、正しいものはどれですか。
+  choices:
+  - id: a
+    text: 正しい。private にすれば、外から変えられなくなる
+  - id: b
+    text: 正しい。メソッドを通すので、処理が速くなる
+  - id: c
+    text: 誤り。取得のメソッドがあると、値を読まれてしまう
+  - id: d
+    text: 誤り。設定のメソッドが規則を確かめないので、外から自由に書き換えられる
+- id: encapsulation.q08
+  category: mistake
+  stem: 適切な設計のシフトレバーで、切り替えの入口が返す結果を使わずに、いつも「受付」と表示するように書き換えました。何が起きますか。
+  choices:
+  - id: a
+    text: 変速機の規則が無効になり、走行中でも R に入るようになる
+  - id: b
+    text: 何も変わらない。表示は結果と関係がない
+  - id: c
+    text: 拒否されたのに「受付」と表示され、表示と実際の結果（拒否されて、位置は変わっていない）が食い違う
+  - id: d
+    text: プログラムがエラーで止まる
+- id: encapsulation.q09
+  category: code
+  stem: 燃料タンクのクラスです。上限（50L）を超えて残量が増えないようにしたいとき、カプセル化の観点で最も問題がある点はどれですか。
+  code:
+    java:
+      fileName: FuelTank.java
+      content: |
+        /** 燃料タンク。残量（L）を持つ */
+        class FuelTank {
+            static final int CAPACITY = 50;
+            public int liters = 0;
+
+            void refuel(int amount) {
+                if (liters + amount > CAPACITY) {
+                    liters = CAPACITY;
+                } else {
+                    liters += amount;
+                }
+            }
+        }
+    cpp:
+      fileName: fuel_tank.h
+      content: |
+        #ifndef FUEL_TANK_H
+        #define FUEL_TANK_H
+
+        // 燃料タンク。残量（L）を持つ
+        struct FuelTank {
+            static constexpr int kCapacity = 50;
+            int liters = 0;
+
+            void refuel(int amount)
+            {
+                if (liters + amount > kCapacity) {
+                    liters = kCapacity;
+                } else {
+                    liters += amount;
+                }
+            }
+        };
+
+        #endif
+    vba:
+      fileName: FuelTank.cls
+      content: |
+        Option Explicit
+
+        ' 燃料タンク。残量（L）を持つ
+        Public Liters As Long
+
+        Public Sub Refuel(ByVal amount As Long)
+            Const CAPACITY As Long = 50
+            If Liters + amount > CAPACITY Then
+                Liters = CAPACITY
+            Else
+                Liters = Liters + amount
+            End If
+        End Sub
+  choices:
+  - id: a
+    text: 残量の変数が公開されていて、給油の処理を通さずに、上限を超える値を設定できる
+  - id: b
+    text: 上限の値を、定数にしている
+  - id: c
+    text: 給油の処理の中で、上限を確かめている
+  - id: d
+    text: 残量の単位が L になっている
+- id: encapsulation.q10
+  category: code
+  stem: ワイパーのクラスです。速さは 0〜3 の範囲でなければなりません。このクラスについて、正しい説明はどれですか。
+  code:
+    java:
+      fileName: Wiper.java
+      content: |
+        /** ワイパー。速さは 0（停止）から 3（高速）まで */
+        class Wiper {
+            private int speedLevel = 0;
+
+            int getSpeedLevel() {
+                return speedLevel;
+            }
+
+            void setSpeedLevel(int speedLevel) {
+                this.speedLevel = speedLevel;
+            }
+        }
+    cpp:
+      fileName: wiper.h
+      content: |
+        #ifndef WIPER_H
+        #define WIPER_H
+
+        // ワイパー。速さは 0（停止）から 3（高速）まで
+        class Wiper {
+        public:
+            int speed_level() const { return speed_level_; }
+            void set_speed_level(int value) { speed_level_ = value; }
+
+        private:
+            int speed_level_ = 0;
+        };
+
+        #endif
+    vba:
+      fileName: Wiper.cls
+      content: |
+        Option Explicit
+
+        ' ワイパー。速さは 0（停止）から 3（高速）まで
+        Private mSpeedLevel As Long
+
+        Public Property Get SpeedLevel() As Long
+            SpeedLevel = mSpeedLevel
+        End Property
+
+        Public Property Let SpeedLevel(ByVal value As Long)
+            mSpeedLevel = value
+        End Property
+  choices:
+  - id: a
+    text: 速さの変数が非公開なので、範囲外の値にはならない
+  - id: b
+    text: 設定の入口が範囲を確かめないので、外から 5 などの範囲外の値を設定できる
+  - id: c
+    text: 取得の入口があるので、カプセル化が壊れている
+  - id: d
+    text: 速さの変数を公開したほうが、範囲外の値を防げる

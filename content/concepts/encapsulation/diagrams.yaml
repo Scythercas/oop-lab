@@ -1,0 +1,182 @@
+- id: spec
+  type: structure
+  caption: '題材の流れ: 2つの操作から要求が届き、変速機が規則で判断する'
+  nodes:
+  - id: lever
+    label: シフトレバー
+    lines:
+    - 位置を要求
+    col: 1
+    row: 1
+  - id: button
+    label: P ボタン
+    lines:
+    - P を要求
+    col: 1
+    row: 2
+  - id: gearbox
+    label: 変速機
+    lines:
+    - '位置: P・R・N・D'
+    - text: '規則: 走行中は R に入れない'
+      style: rule
+    col: 2
+    row: 1.5
+  - id: display
+    label: 表示
+    lines:
+    - D→R 20km/h 拒否 現在D
+    col: 3
+    row: 1.5
+  edges:
+  - from: lever
+    to: gearbox
+    label: 位置と車速
+  - from: button
+    to: gearbox
+    label: 車速
+  - from: gearbox
+    to: display
+    label: 結果
+- id: unapplied
+  type: structure
+  caption: '未適用: 規則は呼び出す側にあり、位置を直接書き換える'
+  nodes:
+  - id: lever
+    label: シフトレバー
+    lines:
+    - text: '規則: R の確認'
+      style: rule
+    col: 1
+    row: 1
+  - id: button
+    label: P ボタン
+    lines:
+    - text: '規則: なし'
+      style: muted
+    col: 1
+    row: 2
+  - id: gearbox
+    label: 変速機
+    lines:
+    - text: 位置（公開）
+      style: bad
+    col: 2
+    row: 1.5
+  edges:
+  - from: lever
+    to: gearbox
+    label: 直接書き換え
+    style: bad
+  - from: button
+    to: gearbox
+    label: 直接書き換え
+    style: bad
+- id: proper
+  type: structure
+  caption: '適切: 位置は非公開。規則は変速機の入口の中の1か所'
+  nodes:
+  - id: lever
+    label: シフトレバー
+    col: 1
+    row: 1
+  - id: button
+    label: P ボタン
+    col: 1
+    row: 2
+  - id: gearbox
+    label: 変速機
+    lines:
+    - text: 切り替えの入口（規則）
+      style: rule
+    - text: 位置（非公開）
+      style: good
+    col: 2
+    row: 1.5
+    style: rule
+  edges:
+  - from: lever
+    to: gearbox
+    label: 切り替えを頼む
+    style: good
+  - from: button
+    to: gearbox
+    label: 切り替えを頼む
+    style: good
+- id: overapplied
+  type: structure
+  caption: '過剰適用: 位置は非公開だが、確かめない設定の入口で書き換えられる'
+  nodes:
+  - id: lever
+    label: シフトレバー
+    lines:
+    - text: '規則: R の確認'
+      style: rule
+    col: 1
+    row: 1
+  - id: button
+    label: P ボタン
+    lines:
+    - text: '規則: なし'
+      style: muted
+    col: 1
+    row: 2
+  - id: gearbox
+    label: 変速機
+    lines:
+    - text: 設定の入口（確かめない）
+      style: bad
+    - text: 位置（非公開）
+      style: good
+    col: 2
+    row: 1.5
+  edges:
+  - from: lever
+    to: gearbox
+    label: 設定して書き換え
+    style: bad
+  - from: button
+    to: gearbox
+    label: 設定して書き換え
+    style: bad
+- id: override
+  type: structure
+  caption: 試験用の入口は、規則を通らずに位置を変えられる
+  nodes:
+  - id: lever
+    label: シフトレバー
+    col: 1
+    row: 1
+  - id: tester
+    label: 試験用の道具
+    col: 1
+    row: 2
+  - id: gearbox
+    label: 変速機
+    lines:
+    - text: 切り替えの入口（規則）
+      style: rule
+    - text: 試験用の入口（規則なし）
+      style: bad
+    - text: 位置（非公開）
+      style: good
+    col: 2
+    row: 1.5
+  edges:
+  - from: lever
+    to: gearbox
+    label: 切り替えを頼む
+    style: good
+  - from: tester
+    to: gearbox
+    label: 規則を通らない
+    style: bad
+- id: usage
+  type: decision
+  caption: カプセル化するかどうかの判断
+  questions:
+  - text: データに守るべき規則がある？
+    'no': しなくてよい
+  - text: そのデータを変える箇所が2つ以上？
+    'no': どちらでもよい（増えたら考える）
+  'yes': カプセル化する
