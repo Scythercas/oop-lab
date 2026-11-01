@@ -23,23 +23,23 @@
     "vba:check": "node tools/ci/check-vba-record.ts"
   },
   "dependencies": {
-    "@astrojs/react": "7.1.0",
+    "@astrojs/react": "7.1.2",
     "@codemirror/commands": "6.11.1",
     "@codemirror/lang-cpp": "6.0.3",
     "@codemirror/lang-java": "6.0.2",
     "@codemirror/language": "6.13.1",
     "@codemirror/legacy-modes": "6.5.5",
     "@codemirror/state": "6.7.6",
-    "@codemirror/view": "6.43.14",
+    "@codemirror/view": "6.43.15",
     "@fontsource-variable/noto-sans-jp": "5.3.1",
     "@fontsource/biz-udgothic": "5.3.0",
-    "astro": "7.4.0",
+    "astro": "7.4.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.10",
+    "@astrojs/check": "0.9.12",
     "@axe-core/playwright": "4.14.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.64.1",
@@ -50,12 +50,12 @@
     "eslint": "10.13.0",
     "eslint-plugin-astro": "3.2.1",
     "globals": "17.13.0",
-    "marked": "18.1.1",
+    "marked": "18.1.2",
     "shiki": "4.5.0",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.71.2",
+    "typescript-eslint": "8.72.1",
     "vitest": "5.0.5",
-    "wrangler": "4.151.1",
+    "wrangler": "4.156.0",
     "yaml": "2.9.1"
   }
 }
